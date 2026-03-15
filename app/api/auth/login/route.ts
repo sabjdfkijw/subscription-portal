@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import db from '@/lib/db';
+import { sendVerificationEmail } from '@/lib/email';
 
 export async function POST(req: Request) {
   const { email, orderId } = await req.json();
@@ -7,6 +9,26 @@ export async function POST(req: Request) {
     const shopifyStore = "a1wfw0-15.myshopify.com";
     const accessToken = process.env.SHOPIFY_ACCESS_TOKEN;
 
+    // 1. Check if email is already verified
+    const isEmailVerified = db.prepare('SELECT * FROM verified_emails WHERE email = ?').get(email.trim());
+
+    if (!isEmailVerified) {
+      // 2. Generate and send verification code for first-time login
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes from now
+
+      db.prepare('INSERT OR REPLACE INTO verification_codes (email, code, expires_at) VALUES (?, ?, ?)')
+        .run(email.trim(), verificationCode, expiresAt);
+
+      await sendVerificationEmail(email.trim(), verificationCode);
+
+      return NextResponse.json(
+        { success: false, requiresVerification: true, message: "Verification code sent to your email." },
+        { status: 200 } // Use 200 to indicate partial success / next step needed
+      );
+    }
+
+    // Proceed with Shopify order verification for verified emails
     const url = `https://${shopifyStore}/admin/api/2024-01/orders.json?email=${encodeURIComponent(email.trim())}&status=any&limit=250`;
     const response = await fetch(url, {
       headers: { "X-Shopify-Access-Token": accessToken || "" },
@@ -46,10 +68,10 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error("Login error:", err);
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { success: false, error: err.message || "Internal server error" },
       { status: 500 }
     );
   }
