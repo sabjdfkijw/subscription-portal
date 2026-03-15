@@ -1,15 +1,140 @@
 'use client';
-import SharedLayout from '@/components/SharedLayout';
+import { useState, useEffect } from 'react';
 
 export default function Cancel4() {
+  const [customerName, setCustomerName] = useState('');
+  const [upsellBannerError, setUpsellBannerError] = useState(false);
+
+  useEffect(() => {
+    const checkAuthAndFetchCustomer = async () => {
+      try {
+        const response = await fetch('/api/customer/info');
+        if (response.status === 401) {
+          window.location.href = '/login?redirect_uri=/member';
+          return;
+        }
+        const data = await response.json();
+        setCustomerName(data.name || 'Customer');
+      } catch (error) {
+        console.error('Authentication check or customer info fetch failed:', error);
+        window.location.href = '/login?redirect_uri=/member'; // Redirect on any error during auth check
+      }
+    };
+    checkAuthAndFetchCustomer();
+  }, []);
+
+  const handleStay = () => {
+    window.location.href = '/member';
+  };
+
+  const handleCancel = () => {
+    window.location.href = '/cancel5'; // Redirect to next step in flow
+  };
+
+  const handleUpgrade = () => {
+    window.location.href = '/member?tab=upgrade';
+  };
+
   return (
-    <SharedLayout >
-      <div className="max-w-2xl mx-auto p-6 border rounded shadow-sm">
-        <h2 className="text-2xl font-bold mb-4">One More Thing...</h2>
-        <p className="mb-6">We'll credit your last payment if you try the trial!</p>
-        <button className="bg-green-600 text-white w-full py-3 rounded mb-4">Start Trial $9.95</button>
-        <a href="/cancel5" className="block text-center text-red-600 underline">No thanks</a>
+    <div style={{ fontFamily: '"Montserrat", sans-serif', backgroundColor: '#fff', color: '#333', minHeight: '100vh', margin: 0, padding: 0 }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+        
+        body { margin: 0; padding: 0; }
+        .container { max-width: 800px; margin: 0 auto; padding: 0 15px; }
+        
+        .nav-tabs { display: flex; border-bottom: 1px solid #eee; margin-bottom: 30px; }
+        .nav-tab { padding: 12px 20px; font-size: 14px; color: #666; border: none; background: none; cursor: pointer; font-weight: 500; }
+        .nav-tab.active { color: #111827; font-weight: 700; border-bottom: 2px solid #111827; }
+
+        .promo-banner { width: 100%; border-radius: 12px; overflow: hidden; margin: 20px 0; cursor: pointer; }
+        
+        .sub-nav { font-size: 13px; color: #6b7280; margin-bottom: 25px; display: flex; align-items: center; gap: 5px; }
+        .sub-nav b { color: #111827; }
+
+        .main-title { font-size: 24px; font-weight: 800; color: #111827; margin-bottom: 20px; text-align: center; }
+        .main-text { font-size: 14px; color: #4b5563; line-height: 1.6; max-width: 600px; margin: 0 auto 30px; text-align: center; }
+
+        .offer-box { background-color: #fefce8; border: 1px solid #fde047; border-radius: 8px; padding: 30px 20px; text-align: center; margin-bottom: 40px; }
+        .offer-title { font-size: 18px; font-weight: 800; color: #111827; margin-bottom: 15px; }
+        .offer-price { font-size: 36px; font-weight: 900; color: #b91c1c; line-height: 1; margin-bottom: 5px; }
+        .offer-terms { font-size: 13px; color: #4b5563; margin-bottom: 25px; }
+        .offer-image { max-width: 80%; height: auto; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .offer-list { list-style: none; padding: 0; margin: 0 auto 25px; max-width: 300px; text-align: left; font-size: 14px; color: #4b5563; line-height: 2; }
+        .offer-list li { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        .offer-list li span { color: #22c55e; font-weight: 900; }
+
+        .btn-claim { background: #fde047; color: #111827; border: 1px solid #facc15; padding: 20px 30px; border-radius: 50px; font-size: 16px; font-weight: 800; cursor: pointer; width: 100%; max-width: 450px; margin-bottom: 15px; box-shadow: 0 4px 0 #eab308; line-height: 1.4; display: block; margin-left: auto; margin-right: auto; }
+        .btn-stick { background: white; border: 1px solid #e2e8f0; color: #64748b; padding: 12px 30px; border-radius: 50px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; max-width: 450px; display: block; margin-left: auto; margin-right: auto; }
+
+        @media (max-width: 600px) {
+          .main-title { font-size: 20px; }
+          .offer-price { font-size: 30px; }
+        }
+      `}</style>
+      
+      <div className="container">
+        {/* UPSELL IMAGE */}
+        <div className="promo-banner" onClick={handleUpgrade}>
+          <img 
+            src="/upgrade-banner.jpg" 
+            alt="Upgrade to Pro" 
+            style={{ width: '100%', display: 'block', minHeight: '100px', backgroundColor: '#f3f4f6', objectFit: 'cover' }} 
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+              setUpsellBannerError(true);
+            }}
+          />
+          {upsellBannerError && (
+             <div style={{ width: '100%', height: '120px', background: 'linear-gradient(90deg, #fefce8 0%, #dcfce7 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px', textAlign: 'center', border: '1px solid #e5e7eb', borderRadius: '12px' }}>
+                <div style={{ flex: 1, textAlign: 'left' }}>
+                  <div style={{ fontWeight: '800', fontSize: '20px', color: '#111827' }}>Love your results? You're ready for the next level</div>
+                  <div style={{ fontSize: '14px', color: '#4b5563' }}>MoldMD Pro offers faster coverage and deep prevention</div>
+                </div>
+                <button style={{ background: '#fde047', color: '#111827', border: '1px solid #facc15', borderRadius: '20px', padding: '8px 16px', fontWeight: '800', fontSize: '12px', marginLeft: '10px' }}>Discover Mold Defense</button>
+             </div>
+          )}
+        </div>
+
+        <h2 style={{ fontSize: '22px', fontWeight: 800, margin: '20px 0', color: '#111827' }}>Hi, {customerName}</h2>
+        
+        <div className="nav-tabs">
+          <button className="nav-tab" onClick={() => window.location.href = '/member'}>Overview</button>
+          <button className="nav-tab" onClick={() => window.location.href = '/member?tab=upgrade'}>Upgrade Value</button>
+          <button className="nav-tab active" onClick={() => window.location.href = '/member'}>Account</button>
+        </div>
+
+        <div className="sub-nav">
+          <span style={{ cursor: 'pointer' }} onClick={handleStay}>‹ Subscription</span> / <b>Cancelation</b>
+        </div>
+
+        <h1 className="main-title">Wait! There's ONE More Offer Before You Go...</h1>
+        <p className="main-text">
+          As a valued customer, we'd like to offer you a special deal on our top-tier MoldMD Pro, which you won't find anywhere else. 
+          This is your last chance to experience complete mold defense for just pennies a day.
+        </p>
+
+        <div className="offer-box">
+          <h2 className="offer-title">Unlock MoldMD Pro Today</h2>
+          <p className="offer-price">$9.95<span style={{ fontSize: '18px', verticalAlign: 'super', fontWeight: 600 }}>/first month</span></p>
+          <p className="offer-terms">(Then $29.95/month after that)</p>
+          <img src="https://placehold.co/400x250?text=MoldMD+Pro+Offer" alt="MoldMD Pro Offer" className="offer-image" />
+          <ul className="offer-list">
+            <li><span>✓</span> Advanced mold protection</li>
+            <li><span>✓</span> Electric sprayer included</li>
+            <li><span>✓</span> Quarterly shipments</li>
+            <li><span>✓</span> Save over $150 annually</li>
+          </ul>
+          <button className="btn-claim" onClick={handleUpgrade}>
+            Yes! Upgrade to MoldMD Pro Now
+          </button>
+          <div style={{ marginTop: '20px' }}>
+            <button className="btn-stick" onClick={handleCancel}>
+              No thanks, continue to cancel
+            </button>
+          </div>
+        </div>
       </div>
-    </SharedLayout>
+    </div>
   );
 }

@@ -2,7 +2,7 @@ export default function SharedLayout({ children, onBannerClick }: { children: Re
   return (
     <div style={{ fontFamily: 'sans-serif', backgroundColor: 'white', minHeight: '100vh' }}>
       <div style={{ backgroundColor: '#1d4ed8', color: 'white', padding: '10px', textAlign: 'center', fontSize: '14px', fontWeight: '500' }}>
-        Stop Paying Exterminators - Get Professional Pest Control for 70% Less &gt;&gt;
+        Stop Paying Professionals - Get Professional Mold Control for 70% Less &gt;&gt;
       </div>
       
       <nav style={{ padding: '20px 32px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

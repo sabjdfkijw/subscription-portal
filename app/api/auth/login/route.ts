@@ -22,7 +22,6 @@ export async function POST(req: Request) {
     });
 
     if (match) {
-      // Extract customer name from the order's shipping address or customer object
       let customerName = "Customer";
       if (match.shipping_address) {
         const sa = match.shipping_address;
@@ -37,9 +36,9 @@ export async function POST(req: Request) {
       }
 
       const res = NextResponse.json({ success: true });
-      res.cookies.set("portal_session", "authenticated", { httpOnly: true, secure: true });
-      res.cookies.set("portal_email", email.trim(), { httpOnly: true, secure: true });
-      res.cookies.set("portal_name", customerName, { httpOnly: true, secure: true });
+      res.cookies.set("portal_session", "authenticated", { httpOnly: true, secure: true, sameSite: 'lax' });
+      res.cookies.set("portal_email", email.trim(), { httpOnly: true, secure: true, sameSite: 'lax' });
+      res.cookies.set("portal_name", customerName, { httpOnly: true, secure: true, sameSite: 'lax' });
       return res;
     } else {
       return NextResponse.json(
